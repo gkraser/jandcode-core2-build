@@ -1,0 +1,112 @@
+import jandcode.commons.*
+import jandcode.commons.conf.*
+import jandcode.core.jc.*
+import jandcode.jc.*
+import jandcode.jc.std.*
+
+class P extends ProjectScript {
+
+    ReleaseProject rp
+    String mainRepo = "jandcode-core2"
+
+    void onInclude() {
+        project.name = "jandcode-core2-build"
+        //
+        //include(RootProject)
+
+        rp = include(ReleaseProject)
+
+        rp.defaultCfg { Conf cfg ->
+            cfg['repo.deploy'] = "C:/NOT-EXISTS"
+        }
+
+        rp.repos.addRepo("https://github.com/gkraser/jandcode-core2")
+        //
+    }
+
+    //////
+
+    @CmDef
+    void cmBuild() {
+        cm.exec("step-update-repos")
+        cm.exec("step-build")
+        cm.exec("step-clean-distr")
+        cm.exec("step-create-distr")
+    }
+
+    @CmDef
+    void step_build() {
+        def r = rp.repos.getRepo('jandcode-core2')
+        ut.runcmd(cmd: "jc-run product -u", dir: r.path, env: ['JC_PREPARE_RUN': ''])
+    }
+
+    @CmDef
+    void step_clean_distr() {
+        String destDir = wd("_distr")
+        ut.cleandir(destDir)
+    }
+
+    @CmDef
+    void step_create_distr() {
+        String srcDir = "${rp.repos.getRepo(mainRepo).path}/bin"
+        String destDir = wd("_distr")
+
+        String distrVer = rp.repos.loadVersion(srcDir)
+        String distrName = mainRepo
+
+        String distrFullName = "${distrName}-${distrVer}"
+
+        String destFile = "${destDir}/${distrFullName}.zip"
+
+        ant.zip(destfile: destFile) {
+            zipfileset(dir: srcDir, prefix: "${distrFullName}", defaultexcludes: false) {
+                include(name: "**/*")
+            }
+        }
+
+        log "distr created: ${destFile}"
+    }
+
+    @CmDef
+    void step_deploy_git() {
+        //
+        String dest = wd("_deploy/repo")
+        def rDeploy = rp.repos.createRepo(rp.cfg.getString("repo.deploy"))
+        rDeploy.path = dest
+        rDeploy.cloneOpts = "--depth 1"
+        rDeploy.update()
+        //
+        def rSrc = rp.repos.getRepo('jandcode-core2')
+        //
+
+        //
+        String srcDir = UtFile.join(rSrc.path, "bin")
+        String destDir = dest
+
+        // проверяем версию
+        String vSrc = rp.repos.loadVersion(srcDir)
+        String vDeploy = rp.repos.loadVersion(destDir)
+        if (vDeploy == vSrc) {
+            log "unchanged version: ${vDeploy}"
+            return
+        }
+
+        // update
+        ant.delete() {
+            fileset(dir: destDir) {
+                exclude(name: '.git*')
+            }
+        }
+        ant.copy(todir: destDir) {
+            fileset(dir: srcDir)
+        }
+
+        // deploy
+        ut.runcmd(cmd: "git add .", dir: destDir)
+        ut.runcmd(cmd: "git commit -m \"${vSrc}\"", dir: destDir)
+        ut.runcmd(cmd: "git tag -a \"v-${vSrc}\" -m \"${vSrc}\"", dir: destDir)
+        ut.runcmd(cmd: "git push", dir: destDir)
+        ut.runcmd(cmd: "git push --tags", dir: destDir)
+    }
+
+}
