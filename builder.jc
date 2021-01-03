@@ -27,9 +27,9 @@ class P extends ProjectScript {
 
     @CmDef
     void cmBuild() {
+        cm.exec("step-clean-distr")
         cm.exec("step-update-repos")
         cm.exec("step-build")
-        cm.exec("step-clean-distr")
         cm.exec("step-create-distr")
     }
 
