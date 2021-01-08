@@ -7,9 +7,10 @@ import jandcode.jc.std.*
 class P extends ProjectScript {
 
     ReleaseProject rp
+    String distrName = "jandcode-core2"
 
     void onInclude() {
-        project.name = "jandcode-core2"
+        project.name = "jandcode-core2-build"
         //
         //include(RootProject)
 
@@ -47,14 +48,11 @@ class P extends ProjectScript {
 
     @CmDef
     void step_create_distr() {
-        String srcDir = "${rp.repos.getRepo(project.name).path}/bin"
+        String srcDir = "${rp.repos.getRepo(distrName).path}/bin"
         String destDir = wd("_distr")
 
         String distrVer = rp.repos.loadVersion(srcDir)
-        String distrName = project.name
-
         String distrFullName = "${distrName}-${distrVer}"
-
         String destFile = "${destDir}/${distrFullName}.zip"
 
         ant.zip(destfile: destFile) {
