@@ -10,6 +10,7 @@ JCLIBDIR=${WD}/lib
 CP=
 CP=${CP}:${JCLIBDIR}/jandcode-commons-launcher.jar
 CP=${CP}:${JCLIBDIR}/commons-io.jar
+CP=${CP}:${JCLIBDIR}/commons-lang3.jar
 CP=${CP}:${JCLIBDIR}/commons-vfs2.jar
 CP=${CP}:${JCLIBDIR}/gson.jar
 CP=${CP}:${JCLIBDIR}/slf4j-api.jar
@@ -37,4 +38,4 @@ JVM="${JVM} -Djandcode.launcher.main=jandcode.jc.Main"
 JVM="${JVM} -Djandcode.jc.appdir=${WD}"
 JVM="${JVM} -Dfile.encoding=UTF-8"
 
-java ${JVM} ${JC_JVM} jandcode.jc.Main ${JC_CLI} $*
+java ${JVM} ${JC_JVM} jandcode.commons.launcher.Launcher ${JC_CLI} $*

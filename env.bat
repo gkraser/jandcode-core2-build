@@ -1,6 +1,6 @@
 @echo off
 
-set JAVA_HOME=w:\pf\jdk15
+set JAVA_HOME=w:\pf\jdk17
 set JC_RUN=%~dp0\bin\jc2\jc-run.bat
 set JC_JVM=
 

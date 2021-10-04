@@ -7,6 +7,7 @@ set JCLIBDIR=%~dp0lib
 set CP=
 set CP=%CP%;%JCLIBDIR%\jandcode-commons-launcher.jar
 set CP=%CP%;%JCLIBDIR%\commons-io.jar
+set CP=%CP%;%JCLIBDIR%\commons-lang3.jar
 set CP=%CP%;%JCLIBDIR%\commons-vfs2.jar
 set CP=%CP%;%JCLIBDIR%\gson.jar
 set CP=%CP%;%JCLIBDIR%\slf4j-api.jar
