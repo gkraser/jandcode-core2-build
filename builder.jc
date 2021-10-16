@@ -106,4 +106,9 @@ class P extends ProjectScript {
         ut.runcmd(cmd: "git push --tags", dir: destDir)
     }
 
+    @CmDef(help = "Сборка и публикация документации")
+    void cmPublishDoc() {
+        ut.runcmd(cmd: "builder publish", dir: wd("doc"))
+    }
+
 }

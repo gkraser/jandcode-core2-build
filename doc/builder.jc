@@ -68,6 +68,7 @@ class P extends ProjectScript {
         String srcVersion = rp.repos.loadVersion(srcDir)
         if (destVersion == srcVersion) {
             log.info("version equals")
+            return
         }
         log.info("copy...")
         ut.cleandir(destDir)
