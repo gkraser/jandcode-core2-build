@@ -39,20 +39,47 @@ class P extends ProjectScript {
         bat.save(wd("${rp.repos.reposDir}/jc-env.bat"))
     }
 
-    @CmDef
-    void cmBuild() {
+    @CmDef(help = "Сборка и публикация документации")
+    void cmPublish() {
         cm.exec("step-update-repos")
         cm.exec("step-create-jc-env")
+        cm.exec("step-publish-doc")
+    }
 
-        def r
+    @CmDef
+    void step_publish_doc() {
+        def rCore = rp.repos.getRepo("jandcode-core2-docs")
+        ut.runcmd(cmd: "jc product", dir: rCore.path)
 
-        r = rp.repos.getRepo("jandcode-core2-docs")
-        ut.runcmd(cmd: "jc product", dir: r.path)
+        def rJs = rp.repos.getRepo("jandcode-jsmodules")
+        ut.runcmd(cmd: "jc build", dir: rJs.path)
 
-        r = rp.repos.getRepo("jandcode-jsmodules")
-        ut.runcmd(cmd: "jc prepare", dir: r.path)
-        ut.runcmd(cmd: "jc build", dir: r.path + "/docs")
+        def rGh = rp.repos.getRepo("gkraser.github.io")
 
+        publishDoc("${rGh.path}/jandcode-core2", "${rCore.path}/_jc/product")
+        publishDoc("${rGh.path}/jandcode-jsmodules", "${rJs.path}/docs/temp/mdoc-doc")
+    }
+
+    void publishDoc(String destDir, String srcDir) {
+        log.info("publish doc")
+        log.info("   src: ${srcDir}")
+        log.info("  dest: ${destDir}")
+        String destVersion = rp.repos.loadVersion(destDir)
+        String srcVersion = rp.repos.loadVersion(srcDir)
+        if (destVersion == srcVersion) {
+            log.info("version equals")
+        }
+        log.info("copy...")
+        ut.cleandir(destDir)
+        ant.copy(todir: destDir) {
+            fileset(dir: srcDir) {
+                include(name: "**/*")
+            }
+        }
+        log.info("git...")
+        ut.runcmd(cmd: "git add .", dir: destDir)
+        ut.runcmd(cmd: "git commit -m \"~~\"", dir: destDir)
+        ut.runcmd(cmd: "git push", dir: destDir)
     }
 
 }
