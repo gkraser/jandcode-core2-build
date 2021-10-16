@@ -1,0 +1,58 @@
+import jandcode.commons.*
+import jandcode.commons.conf.*
+import jandcode.core.jc.*
+import jandcode.jc.*
+import jandcode.jc.std.*
+
+class P extends ProjectScript {
+
+    ReleaseProject rp
+
+    void onInclude() {
+        project.name = "jandcode-core2-build-doc"
+        //
+        //include(RootProject)
+
+        rp = include(ReleaseProject)
+
+        rp.defaultCfg { Conf cfg ->
+            cfg['repo/jandcode-core2/branch'] = "dev"
+            cfg['repo/jandcode-core2-docs/branch'] = "dev"
+            cfg['repo/jandcode-jsmodules/branch'] = "dev"
+        }
+
+        rp.repos.addRepo("https://github.com/gkraser/jandcode-core2")
+        rp.repos.addRepo("https://github.com/gkraser/gkraser.github.io")
+        rp.repos.addRepo("https://github.com/gkraser/jandcode-core2-docs")
+        rp.repos.addRepo("https://github.com/gkraser/jandcode-jsmodules")
+        //
+    }
+
+    @CmDef
+    void step_create_jc_env() {
+        def bat = create(BatBuilder)
+        bat.addVar(
+                JAVA_HOME: rp.cfg['java.home'],
+                JC_RUN: "%~dp0\\jandcode-core2\\jc-run.bat",
+        )
+        bat.addPath("%JAVA_HOME%\\bin")
+        bat.save(wd("${rp.repos.reposDir}/jc-env.bat"))
+    }
+
+    @CmDef
+    void cmBuild() {
+        cm.exec("step-update-repos")
+        cm.exec("step-create-jc-env")
+
+        def r
+
+        r = rp.repos.getRepo("jandcode-core2-docs")
+        ut.runcmd(cmd: "jc product", dir: r.path)
+
+        r = rp.repos.getRepo("jandcode-jsmodules")
+        ut.runcmd(cmd: "jc prepare", dir: r.path)
+        ut.runcmd(cmd: "jc build", dir: r.path + "/docs")
+
+    }
+
+}
