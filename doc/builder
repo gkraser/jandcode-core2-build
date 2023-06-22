@@ -1,0 +1,3 @@
+#!/bin/bash
+WD=`realpath $(dirname $0)`
+$WD/../builder -f:${WD}/builder.jc $*

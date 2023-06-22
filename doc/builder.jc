@@ -30,13 +30,22 @@ class P extends ProjectScript {
 
     @CmDef
     void step_create_jc_env() {
-        def bat = create(BatBuilder)
-        bat.addVar(
-                JAVA_HOME: rp.cfg['java.home'],
-                JC_RUN: "%~dp0\\jandcode-core2\\jc-run.bat",
-        )
-        bat.addPath("%JAVA_HOME%\\bin")
-        bat.save(wd("${rp.repos.reposDir}/jc-env.bat"))
+        if (UtFile.isWindows()) {
+            def bat = create(BatBuilder)
+            bat.addVar(
+                    JAVA_HOME: rp.cfg['java.home'],
+                    JC_RUN: "%~dp0\\jandcode-core2\\jc-run.bat",
+            )
+            bat.addPath("%JAVA_HOME%\\bin")
+            bat.save(wd("${rp.repos.reposDir}/jc-env.bat"))
+        } else {
+            def s = """\
+export JAVA_HOME=${rp.cfg['java.home']}
+export JC_RUN=${rp.repos.getRepo("jandcode-core2").path+'/jc-run.sh'}
+export PATH=\${JAVA_HOME}/bin:\${PATH}
+            """
+            UtFile.saveString(s, new File(wd("${rp.repos.reposDir}/jc-env.sh")))
+        }
     }
 
     @CmDef(help = "Сборка и публикация документации")

@@ -37,7 +37,7 @@ class P extends ProjectScript {
     @CmDef
     void step_build() {
         def r = rp.repos.getRepo('jandcode-core2')
-        ut.runcmd(cmd: "jc-run product -u", dir: r.path, env: ['JC_PREPARE_RUN': ''])
+        ut.runcmd(cmd: "jc product -u", dir: r.path, env: ['JC_PREPARE_RUN': ''])
     }
 
     @CmDef
@@ -108,7 +108,7 @@ class P extends ProjectScript {
 
     @CmDef(help = "Сборка и публикация документации")
     void cmPublishDoc() {
-        ut.runcmd(cmd: "builder publish", dir: wd("doc"))
+        ut.runcmd(cmd: "./builder publish", dir: wd("doc"))
     }
 
 }
